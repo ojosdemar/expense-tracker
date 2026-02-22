@@ -1,20 +1,20 @@
 package com.example.expensetracker.presentation.list
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.expensetracker.databinding.FragmentExpenseListBinding
 import com.example.expensetracker.presentation.common.DateUtils
 import com.example.expensetracker.presentation.main.MainViewModel
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -32,36 +32,29 @@ class ExpenseListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.d("ExpenseTracker", "ExpenseListFragment onCreateView")
         _binding = FragmentExpenseListBinding.inflate(inflater, container, false)
         return binding.root
     }
     
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("ExpenseTracker", "ExpenseListFragment onViewCreated")
         
-        setupRecyclerView()
-        setupButtons()
-        observeViewModel()
+        try {
+            setupRecyclerView()
+            setupButtons()
+            observeViewModel()
+        } catch (e: Exception) {
+            Log.e("ExpenseTracker", "Error in onViewCreated", e)
+            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
     
     private fun setupRecyclerView() {
         adapter = ExpenseListAdapter()
+        binding.recyclerExpenses.layoutManager = LinearLayoutManager(context)
         binding.recyclerExpenses.adapter = adapter
-        
-        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
-            0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-        ) {
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean = false
-            
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                // TODO: Implement delete with confirmation
-            }
-        })
-        itemTouchHelper.attachToRecyclerView(binding.recyclerExpenses)
     }
     
     private fun setupButtons() {
@@ -79,6 +72,7 @@ class ExpenseListFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.expenses.collect { expenses ->
+                        Log.d("ExpenseTracker", "Got ${expenses.size} expenses")
                         adapter.submitList(expenses)
                         binding.tvEmpty.visibility = 
                             if (expenses.isEmpty()) View.VISIBLE else View.GONE
