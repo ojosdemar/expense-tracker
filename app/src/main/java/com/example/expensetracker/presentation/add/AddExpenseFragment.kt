@@ -79,3 +79,41 @@ class AddExpenseFragment : Fragment() {
         binding.btnSave.setOnClickListener {
             viewModel.onAmountChanged(binding.etAmount.text.toString())
             viewModel.onDescriptionChanged(binding.etDescription.text.toString())
+            viewModel.saveExpense()
+        }
+        
+        binding.btnCancel.setOnClickListener {
+            findNavController().navigateUp()
+        }
+    }
+    
+    private fun observeViewModel() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.uiState.collect { state ->
+                        state.error?.let { error ->
+                            Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG).show()
+                            viewModel.clearError()
+                        }
+                    }
+                }
+                
+                launch {
+                    viewModel.events.collect { event ->
+                        when (event) {
+                            is AddExpenseViewModel.AddExpenseEvent.Success -> {
+                                findNavController().navigateUp()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
