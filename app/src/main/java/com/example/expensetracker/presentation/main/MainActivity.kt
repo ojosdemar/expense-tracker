@@ -32,17 +32,16 @@ class MainActivity : AppCompatActivity() {
             
             setSupportActionBar(binding.toolbar)
             
-            // Показываем список вместо навигации
+            // Показываем список
             if (savedInstanceState == null) {
                 supportFragmentManager.beginTransaction()
-                    .replace(R.id.nav_host_fragment, ExpenseListFragment())
+                    .replace(R.id.container, ExpenseListFragment())
                     .commit()
             }
             
             binding.fabAdd.setOnClickListener {
-                // Открываем фрагмент добавления
                 supportFragmentManager.beginTransaction()
-                    .replace(R.id.nav_host_fragment, AddExpenseFragment())
+                    .replace(R.id.container, AddExpenseFragment())
                     .addToBackStack(null)
                     .commit()
             }
@@ -53,7 +52,6 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.e("ExpenseTracker", "Error in onCreate", e)
             Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-            e.printStackTrace()
         }
     }
     
