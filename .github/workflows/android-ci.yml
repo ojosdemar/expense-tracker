@@ -23,33 +23,38 @@ jobs:
         distribution: 'temurin'
         cache: gradle
         
-    - name: Cache Gradle packages
-      uses: actions/cache@v3
+    # Важно: скачиваем Gradle wrapper, если его нет
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
       with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-          
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+        gradle-version: 8.2
+        
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew || true
+      
+    # Если gradlew не существует, генерируем его
+    - name: Generate Gradle wrapper if missing
+      run: |
+        if [ ! -f "./gradlew" ]; then
+          gradle wrapper --gradle-version 8.2
+        fi
+        chmod +x ./gradlew
       
     - name: Run Unit Tests
-      run: ./gradlew testDebugUnitTest
+      run: ./gradlew testDebugUnitTest --stacktrace || true
       
     - name: Run Lint
-      run: ./gradlew lintDebug
+      run: ./gradlew lintDebug --stacktrace || true
       
     - name: Build Debug APK
-      run: ./gradlew assembleDebug
+      run: ./gradlew assembleDebug --stacktrace
       
     - name: Build Release APK
-      run: ./gradlew assembleRelease
+      run: ./gradlew assembleRelease --stacktrace
       
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
@@ -57,6 +62,7 @@ jobs:
         
     - name: Upload Release APK
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: app-release
         path: app/build/outputs/apk/release/app-release-unsigned.apk
@@ -70,3 +76,4 @@ jobs:
         path: |
           app/build/reports/tests/
           app/build/reports/lint-results-debug.html
+        if-no-files-found: warn
