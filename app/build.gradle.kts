@@ -87,4 +87,5 @@ dependencies {
     androidTestImplementation("androidx.room:room-testing:2.6.1")
     androidTestImplementation("com.google.dagger:hilt-android-testing:2.50")
     kaptAndroidTest("com.google.dagger:hilt-compiler:2.50")
+    implementation("androidx.multidex:multidex:2.0.1")
 }
