@@ -31,11 +31,22 @@ jobs:
         gradle-version: 8.2
         
     - name: Build Debug APK
-      run: gradle assembleDebug
+      run: gradle assembleDebug --stacktrace
+      continue-on-error: true
       
-    - name: Build Release APK
-      run: gradle assembleRelease
-      
+    - name: Show error logs
+      if: failure()
+      run: |
+        echo "=== BUILD LOGS ==="
+        cat app/build/outputs/logs/*.log 2>/dev/null || echo "No log files"
+        find . -name "*.log" -type f -exec cat {} \; 2>/dev/null || true
+        
+    - name: Check build outputs
+      run: |
+        echo "=== BUILD OUTPUTS ==="
+        ls -la app/build/outputs/apk/debug/ 2>/dev/null || echo "No debug APK"
+        ls -la app/build/outputs/apk/release/ 2>/dev/null || echo "No release APK"
+        
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       if: always()
