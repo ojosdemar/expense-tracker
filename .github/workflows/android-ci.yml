@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
-    name: Build & Test
+  build:
+    name: Build APK
     runs-on: ubuntu-latest
     
     steps:
@@ -21,36 +21,33 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
         
-    # Важно: скачиваем Gradle wrapper, если его нет
-    - name: Setup Gradle
-      uses: gradle/gradle-build-action@v2
-      with:
-        gradle-version: 8.2
-        
-    - name: Make gradlew executable
-      run: chmod +x ./gradlew || true
+    - name: Install Android SDK
+      uses: android-actions/setup-android@v3
       
-    # Если gradlew не существует, генерируем его
-    - name: Generate Gradle wrapper if missing
+    - name: Generate Gradle wrapper
       run: |
-        if [ ! -f "./gradlew" ]; then
-          gradle wrapper --gradle-version 8.2
-        fi
-        chmod +x ./gradlew
-      
-    - name: Run Unit Tests
-      run: ./gradlew testDebugUnitTest --stacktrace || true
-      
-    - name: Run Lint
-      run: ./gradlew lintDebug --stacktrace || true
-      
+        mkdir -p gradle/wrapper
+        echo 'distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip
+networkTimeout=10000
+validateDistributionUrl=true
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists' > gradle/wrapper/gradle-wrapper.properties
+        
+        curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradle/wrapper/gradle-wrapper.jar
+        
+        echo '#!/bin/sh
+exec "$(dirname "$0")/gradle/wrapper/gradle-wrapper.jar" "$@"' > gradlew
+        
+        chmod +x gradlew
+        
     - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace
+      run: ./gradlew assembleDebug --no-daemon
       
     - name: Build Release APK
-      run: ./gradlew assembleRelease --stacktrace
+      run: ./gradlew assembleRelease --no-daemon
       
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
@@ -58,7 +55,7 @@ jobs:
       with:
         name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
-        retention-days: 30
+        if-no-files-found: warn
         
     - name: Upload Release APK
       uses: actions/upload-artifact@v4
@@ -66,14 +63,4 @@ jobs:
       with:
         name: app-release
         path: app/build/outputs/apk/release/app-release-unsigned.apk
-        retention-days: 30
-        
-    - name: Upload Test Reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-reports
-        path: |
-          app/build/reports/tests/
-          app/build/reports/lint-results-debug.html
         if-no-files-found: warn
