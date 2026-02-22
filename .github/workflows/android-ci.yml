@@ -30,35 +30,25 @@ jobs:
       with:
         gradle-version: 8.2
         
-    - name: Build Debug APK
-      run: gradle assembleDebug --stacktrace
-      continue-on-error: true
+    - name: Create local.properties
+      run: echo "sdk.dir=/usr/local/lib/android/sdk" > local.properties
       
-    - name: Show error logs
-      if: failure()
+    - name: Build Debug APK
+      run: gradle assembleDebug --info
+      
+    - name: Find APK files
       run: |
-        echo "=== BUILD LOGS ==="
-        cat app/build/outputs/logs/*.log 2>/dev/null || echo "No log files"
-        find . -name "*.log" -type f -exec cat {} \; 2>/dev/null || true
-        
-    - name: Check build outputs
-      run: |
-        echo "=== BUILD OUTPUTS ==="
-        ls -la app/build/outputs/apk/debug/ 2>/dev/null || echo "No debug APK"
-        ls -la app/build/outputs/apk/release/ 2>/dev/null || echo "No release APK"
+        echo "=== Searching for APK files ==="
+        find . -name "*.apk" -type f 2>/dev/null
+        echo "=== Build outputs ==="
+        ls -la app/build/outputs/apk/ 2>/dev/null || echo "No APK directory"
         
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
-      if: always()
       with:
         name: app-debug
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: |
+          **/*.apk
+          app/build/outputs/apk/**/*.apk
         if-no-files-found: warn
-        
-    - name: Upload Release APK
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: app-release
-        path: app/build/outputs/apk/release/app-release-unsigned.apk
-        if-no-files-found: warn
+        retention-days: 30
