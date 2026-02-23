@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity() {
             
             setSupportActionBar(binding.toolbar)
             
-            // Показываем список
             if (savedInstanceState == null) {
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.container, ExpenseListFragment())
@@ -59,7 +58,14 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.selectedMonth.collect { month ->
-                    supportActionBar?.title = DateUtils.formatMonth(month)
+                    // Обновляем и заголовок, и toolbar
+                    val monthText = DateUtils.formatMonth(month)
+                    supportActionBar?.title = monthText
+                    // Обновляем TextView в фрагменте через findFragment
+                    val fragment = supportFragmentManager.findFragmentById(R.id.container)
+                    if (fragment is ExpenseListFragment) {
+                        fragment.updateMonthText(monthText)
+                    }
                 }
             }
         }
