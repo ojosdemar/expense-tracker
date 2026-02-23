@@ -1,8 +1,8 @@
 package com.example.expensetracker.presentation.list
 
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -12,8 +12,7 @@ import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.presentation.common.DateUtils
 
 class ExpenseListAdapter(
-    private val onItemClick: (Expense) -> Unit,
-    private val onItemLongClick: (Expense) -> Unit
+    private val onItemClick: (Expense) -> Unit
 ) : ListAdapter<Expense, ExpenseListAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -38,15 +37,6 @@ class ExpenseListAdapter(
                     onItemClick(getItem(position))
                 }
             }
-            binding.root.setOnLongClickListener {
-                val position = adapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    onItemLongClick(getItem(position))
-                    true
-                } else {
-                    false
-                }
-            }
         }
 
         fun bind(expense: Expense) {
@@ -55,8 +45,26 @@ class ExpenseListAdapter(
                 tvCategory.text = expense.category.displayName
                 tvAmount.text = DateUtils.formatAmount(expense.amount)
                 tvDate.text = DateUtils.formatShortDate(expense.date)
-                colorIndicator.setBackgroundColor(Color.parseColor(expense.category.color))
+                
+                // Градиентная полоска в зависимости от категории
+                val drawable = GradientDrawable(
+                    GradientDrawable.Orientation.LEFT_RIGHT,
+                    intArrayOf(
+                        Color.parseColor(expense.category.color),
+                        Color.parseColor(adjustColorBrightness(expense.category.color, 0.7f))
+                    )
+                )
+                drawable.cornerRadius = 8f
+                colorIndicator.background = drawable
             }
+        }
+
+        private fun adjustColorBrightness(colorHex: String, factor: Float): String {
+            val color = Color.parseColor(colorHex)
+            val r = (Color.red(color) * factor).toInt().coerceIn(0, 255)
+            val g = (Color.green(color) * factor).toInt().coerceIn(0, 255)
+            val b = (Color.blue(color) * factor).toInt().coerceIn(0, 255)
+            return String.format("#%02X%02X%02X", r, g, b)
         }
     }
 
