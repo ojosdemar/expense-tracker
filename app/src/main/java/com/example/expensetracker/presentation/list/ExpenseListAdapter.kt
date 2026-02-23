@@ -2,6 +2,7 @@ package com.example.expensetracker.presentation.list
 
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -10,7 +11,9 @@ import com.example.expensetracker.databinding.ItemExpenseBinding
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.presentation.common.DateUtils
 
-class ExpenseListAdapter : ListAdapter<Expense, ExpenseListAdapter.ViewHolder>(DiffCallback()) {
+class ExpenseListAdapter(
+    private val onExpenseLongClick: (Expense, View) -> Unit
+) : ListAdapter<Expense, ExpenseListAdapter.ViewHolder>(DiffCallback()) {
     
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemExpenseBinding.inflate(
@@ -23,7 +26,7 @@ class ExpenseListAdapter : ListAdapter<Expense, ExpenseListAdapter.ViewHolder>(D
         holder.bind(getItem(position))
     }
     
-    class ViewHolder(
+    inner class ViewHolder(
         private val binding: ItemExpenseBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         
@@ -34,6 +37,12 @@ class ExpenseListAdapter : ListAdapter<Expense, ExpenseListAdapter.ViewHolder>(D
                 tvAmount.text = DateUtils.formatAmount(expense.amount)
                 tvDate.text = DateUtils.formatShortDate(expense.date)
                 colorIndicator.setBackgroundColor(Color.parseColor(expense.category.color))
+                
+                // Долгое нажатие для меню
+                root.setOnLongClickListener { view ->
+                    onExpenseLongClick(expense, view)
+                    true
+                }
             }
         }
     }
