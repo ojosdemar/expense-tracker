@@ -5,10 +5,11 @@ import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.expensetracker.databinding.ItemExpenseBinding
+import com.example.expensetracker.R
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.presentation.common.DateUtils
 
@@ -17,10 +18,9 @@ class ExpenseListAdapter(
 ) : ListAdapter<Expense, ExpenseListAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemExpenseBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false
-        )
-        return ViewHolder(binding, onItemClick)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_expense, parent, false)
+        return ViewHolder(view, onItemClick)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -28,19 +28,25 @@ class ExpenseListAdapter(
     }
 
     class ViewHolder(
-        private val binding: ItemExpenseBinding,
+        itemView: View,
         private val onItemClick: (Expense) -> Unit
-    ) : RecyclerView.ViewHolder(binding.root) {
+    ) : RecyclerView.ViewHolder(itemView) {
+
+        private val tvDescription: TextView = itemView.findViewById(R.id.tv_description)
+        private val tvCategory: TextView = itemView.findViewById(R.id.tv_category)
+        private val tvAmount: TextView = itemView.findViewById(R.id.tv_amount)
+        private val tvDate: TextView = itemView.findViewById(R.id.tv_date)
+        private val colorIndicator: View = itemView.findViewById(R.id.color_indicator)
 
         fun bind(expense: Expense) {
-            binding.root.setOnClickListener {
+            itemView.setOnClickListener {
                 onItemClick(expense)
             }
 
-            binding.tvDescription.text = expense.description
-            binding.tvCategory.text = expense.category.displayName
-            binding.tvAmount.text = DateUtils.formatAmount(expense.amount)
-            binding.tvDate.text = DateUtils.formatShortDate(expense.date)
+            tvDescription.text = expense.description
+            tvCategory.text = expense.category.displayName
+            tvAmount.text = DateUtils.formatAmount(expense.amount)
+            tvDate.text = DateUtils.formatShortDate(expense.date)
             
             val drawable = GradientDrawable(
                 GradientDrawable.Orientation.LEFT_RIGHT,
@@ -50,7 +56,7 @@ class ExpenseListAdapter(
                 )
             )
             drawable.cornerRadius = 8f
-            binding.colorIndicator.background = drawable
+            colorIndicator.background = drawable
         }
 
         private fun adjustColorBrightness(colorHex: String, factor: Float): String {
