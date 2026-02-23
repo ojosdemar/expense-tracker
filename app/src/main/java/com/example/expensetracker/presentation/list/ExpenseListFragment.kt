@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -14,7 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.expensetracker.R  // <-- ДОБАВЬ ЭТОТ ИМПОРТ
+import com.example.expensetracker.R
 import com.example.expensetracker.databinding.FragmentExpenseListBinding
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.presentation.common.DateUtils
@@ -80,7 +79,7 @@ class ExpenseListFragment : Fragment() {
         popup.setOnMenuItemClickListener { item ->
             when (item.title) {
                 "Редактировать" -> editExpense(expense)
-                "Удалить" -> deleteExpense(expense)  // <-- Теперь работает
+                "Удалить" -> deleteExpense(expense)
             }
             true
         }
@@ -95,7 +94,7 @@ class ExpenseListFragment : Fragment() {
             .commit()
     }
     
-    private fun deleteExpense(expense: Expense) {  // <-- Метод добавлен
+    private fun deleteExpense(expense: Expense) {
         AlertDialog.Builder(requireContext())
             .setTitle("Удалить расход?")
             .setMessage("Вы уверены, что хотите удалить \"${expense.description}\" на ${DateUtils.formatAmount(expense.amount)}?")
