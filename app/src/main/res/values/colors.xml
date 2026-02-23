@@ -8,11 +8,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- Background colors -->
     <color name="background_light">#FFF8F9FA</color>
     <color name="background_dark">#FF121212</color>
     
-    <!-- Category colors -->
     <color name="category_food">#FF6B6B</color>
     <color name="category_transport">#4ECDC4</color>
     <color name="category_entertainment">#45B7D1</color>
