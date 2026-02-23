@@ -3,6 +3,7 @@ package com.example.expensetracker.presentation.list
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -19,44 +20,37 @@ class ExpenseListAdapter(
         val binding = ItemExpenseBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return ViewHolder(binding)
+        return ViewHolder(binding, onItemClick)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    inner class ViewHolder(
-        private val binding: ItemExpenseBinding
+    class ViewHolder(
+        private val binding: ItemExpenseBinding,
+        private val onItemClick: (Expense) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        init {
-            binding.root.setOnClickListener {
-                val position = adapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    onItemClick(getItem(position))
-                }
-            }
-        }
-
         fun bind(expense: Expense) {
-            binding.apply {
-                tvDescription.text = expense.description
-                tvCategory.text = expense.category.displayName
-                tvAmount.text = DateUtils.formatAmount(expense.amount)
-                tvDate.text = DateUtils.formatShortDate(expense.date)
-                
-                // Градиентная полоска в зависимости от категории
-                val drawable = GradientDrawable(
-                    GradientDrawable.Orientation.LEFT_RIGHT,
-                    intArrayOf(
-                        Color.parseColor(expense.category.color),
-                        Color.parseColor(adjustColorBrightness(expense.category.color, 0.7f))
-                    )
-                )
-                drawable.cornerRadius = 8f
-                colorIndicator.background = drawable
+            binding.root.setOnClickListener {
+                onItemClick(expense)
             }
+
+            binding.tvDescription.text = expense.description
+            binding.tvCategory.text = expense.category.displayName
+            binding.tvAmount.text = DateUtils.formatAmount(expense.amount)
+            binding.tvDate.text = DateUtils.formatShortDate(expense.date)
+            
+            val drawable = GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                intArrayOf(
+                    Color.parseColor(expense.category.color),
+                    Color.parseColor(adjustColorBrightness(expense.category.color, 0.7f))
+                )
+            )
+            drawable.cornerRadius = 8f
+            binding.colorIndicator.background = drawable
         }
 
         private fun adjustColorBrightness(colorHex: String, factor: Float): String {
