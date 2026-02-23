@@ -50,7 +50,6 @@ class AddExpenseFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        // Загрузка существующей записи для редактирования
         @Suppress("DEPRECATION")
         val expense = arguments?.getSerializable(ARG_EXPENSE) as? Expense
         expense?.let {
@@ -108,7 +107,6 @@ class AddExpenseFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.uiState.collect { state ->
-                        // Обновляем UI при изменении состояния
                         binding.etAmount.setText(state.amount)
                         binding.etAmount.setSelection(state.amount.length)
                         
@@ -116,11 +114,8 @@ class AddExpenseFragment : Fragment() {
                         binding.etDescription.setSelection(state.description.length)
                         
                         binding.dropdownCategory.setText(state.selectedCategory.displayName, false)
-                        
-                        // Исправлено: правильное отображение даты
                         binding.etDate.setText(DateUtils.formatDate(state.selectedDate))
                         
-                        // Обновляем текст кнопки
                         binding.btnSave.text = if (state.isEditing) "Обновить" else "Сохранить"
                         
                         state.error?.let { error ->
@@ -132,8 +127,7 @@ class AddExpenseFragment : Fragment() {
                 launch {
                     viewModel.events.collect { event ->
                         when (event) {
-                            is AddExpenseViewModel.AddExpenseEvent.Success,
-                            is AddExpenseViewModel.AddExpenseEvent.Deleted -> {
+                            is AddExpenseViewModel.AddExpenseEvent.Success -> {
                                 parentFragmentManager.popBackStack()
                             }
                         }
