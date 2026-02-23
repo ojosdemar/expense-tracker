@@ -14,6 +14,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.expensetracker.R  // <-- ДОБАВЬ ЭТОТ ИМПОРТ
 import com.example.expensetracker.databinding.FragmentExpenseListBinding
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.presentation.common.DateUtils
@@ -79,7 +80,7 @@ class ExpenseListFragment : Fragment() {
         popup.setOnMenuItemClickListener { item ->
             when (item.title) {
                 "Редактировать" -> editExpense(expense)
-                "Удалить" -> deleteExpense(expense)
+                "Удалить" -> deleteExpense(expense)  // <-- Теперь работает
             }
             true
         }
@@ -87,7 +88,6 @@ class ExpenseListFragment : Fragment() {
     }
     
     private fun editExpense(expense: Expense) {
-        // Открываем фрагмент редактирования
         val editFragment = com.example.expensetracker.presentation.add.AddExpenseFragment.newInstance(expense.id)
         parentFragmentManager.beginTransaction()
             .replace(R.id.container, editFragment)
@@ -95,7 +95,7 @@ class ExpenseListFragment : Fragment() {
             .commit()
     }
     
-    private fun deleteExpense(expense: Expense) {
+    private fun deleteExpense(expense: Expense) {  // <-- Метод добавлен
         AlertDialog.Builder(requireContext())
             .setTitle("Удалить расход?")
             .setMessage("Вы уверены, что хотите удалить \"${expense.description}\" на ${DateUtils.formatAmount(expense.amount)}?")
