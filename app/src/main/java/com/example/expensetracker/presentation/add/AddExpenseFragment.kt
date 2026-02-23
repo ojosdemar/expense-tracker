@@ -6,15 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
 import com.example.expensetracker.databinding.FragmentAddExpenseBinding
 import com.example.expensetracker.domain.model.Category
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -83,7 +82,8 @@ class AddExpenseFragment : Fragment() {
         }
         
         binding.btnCancel.setOnClickListener {
-            findNavController().navigateUp()
+            // Закрываем фрагмент (возвращаемся назад)
+            parentFragmentManager.popBackStack()
         }
     }
     
@@ -93,7 +93,7 @@ class AddExpenseFragment : Fragment() {
                 launch {
                     viewModel.uiState.collect { state ->
                         state.error?.let { error ->
-                            Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG).show()
+                            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
                             viewModel.clearError()
                         }
                     }
@@ -103,7 +103,8 @@ class AddExpenseFragment : Fragment() {
                     viewModel.events.collect { event ->
                         when (event) {
                             is AddExpenseViewModel.AddExpenseEvent.Success -> {
-                                findNavController().navigateUp()
+                                // Закрываем фрагмент после сохранения
+                                parentFragmentManager.popBackStack()
                             }
                         }
                     }
