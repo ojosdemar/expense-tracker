@@ -68,4 +68,47 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:layout_width="wrap_content
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Всего за месяц"
+                    android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+                <TextView
+                    android:id="@+id/tv_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0,00 ₽"
+                    android:textAppearance="?attr/textAppearanceHeadline4"
+                    android:textColor="?attr/colorOnPrimaryContainer" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_statistics"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Статистика"
+                app:icon="@android:drawable/ic_menu_sort_by_size"
+                style="@style/Widget.Material3.Button.TextButton" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_expenses"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="80dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+    <TextView
+        android:id="@+id/tv_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Нет расходов за этот месяц"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:visibility="gone" />
+</LinearLayout>
