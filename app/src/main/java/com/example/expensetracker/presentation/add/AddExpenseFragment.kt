@@ -25,6 +25,24 @@ class AddExpenseFragment : Fragment() {
     private val binding get() = _binding!!
     
     private val viewModel: AddExpenseViewModel by viewModels()
+    private var expenseId: Long = 0
+    
+    companion object {
+        private const val ARG_EXPENSE_ID = "expense_id"
+        
+        fun newInstance(expenseId: Long = 0): AddExpenseFragment {
+            return AddExpenseFragment().apply {
+                arguments = Bundle().apply {
+                    putLong(ARG_EXPENSE_ID, expenseId)
+                }
+            }
+        }
+    }
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        expenseId = arguments?.getLong(ARG_EXPENSE_ID) ?: 0
+    }
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,6 +55,12 @@ class AddExpenseFragment : Fragment() {
     
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        if (expenseId > 0) {
+            binding.btnSave.text = "Обновить"
+            // Загружаем данные для редактирования
+            viewModel.loadExpense(expenseId)
+        }
         
         setupCategoryDropdown()
         setupDatePicker()
@@ -78,11 +102,15 @@ class AddExpenseFragment : Fragment() {
         binding.btnSave.setOnClickListener {
             viewModel.onAmountChanged(binding.etAmount.text.toString())
             viewModel.onDescriptionChanged(binding.etDescription.text.toString())
-            viewModel.saveExpense()
+            
+            if (expenseId > 0) {
+                viewModel.updateExpense(expenseId)
+            } else {
+                viewModel.saveExpense()
+            }
         }
         
         binding.btnCancel.setOnClickListener {
-            // Закрываем фрагмент (возвращаемся назад)
             parentFragmentManager.popBackStack()
         }
     }
@@ -92,6 +120,14 @@ class AddExpenseFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.uiState.collect { state ->
+                        // Заполняем поля при редактировании
+                        if (expenseId > 0 && state.amount.isNotEmpty() && binding.etAmount.text.isEmpty()) {
+                            binding.etAmount.setText(state.amount)
+                            binding.etDescription.setText(state.description)
+                            binding.etDate.setText(state.selectedDate.toString())
+                            binding.dropdownCategory.setText(state.selectedCategory.displayName, false)
+                        }
+                        
                         state.error?.let { error ->
                             Toast.makeText(context, error, Toast.LENGTH_LONG).show()
                             viewModel.clearError()
@@ -103,7 +139,6 @@ class AddExpenseFragment : Fragment() {
                     viewModel.events.collect { event ->
                         when (event) {
                             is AddExpenseViewModel.AddExpenseEvent.Success -> {
-                                // Закрываем фрагмент после сохранения
                                 parentFragmentManager.popBackStack()
                             }
                         }
