@@ -107,14 +107,24 @@ class AddExpenseFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.uiState.collect { state ->
-                        binding.etAmount.setText(state.amount)
-                        binding.etAmount.setSelection(state.amount.length)
+                        if (binding.etAmount.text.toString() != state.amount) {
+                            binding.etAmount.setText(state.amount)
+                            binding.etAmount.setSelection(state.amount.length)
+                        }
                         
-                        binding.etDescription.setText(state.description)
-                        binding.etDescription.setSelection(state.description.length)
+                        if (binding.etDescription.text.toString() != state.description) {
+                            binding.etDescription.setText(state.description)
+                            binding.etDescription.setSelection(state.description.length)
+                        }
                         
-                        binding.dropdownCategory.setText(state.selectedCategory.displayName, false)
-                        binding.etDate.setText(DateUtils.formatDate(state.selectedDate))
+                        if (binding.dropdownCategory.text.toString() != state.selectedCategory.displayName) {
+                            binding.dropdownCategory.setText(state.selectedCategory.displayName, false)
+                        }
+                        
+                        val dateText = DateUtils.formatDate(state.selectedDate)
+                        if (binding.etDate.text.toString() != dateText) {
+                            binding.etDate.setText(dateText)
+                        }
                         
                         binding.btnSave.text = if (state.isEditing) "Обновить" else "Сохранить"
                         
