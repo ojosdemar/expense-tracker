@@ -24,6 +24,7 @@ import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.presentation.add.AddExpenseFragment
 import com.example.expensetracker.presentation.common.DateUtils
 import com.example.expensetracker.presentation.main.MainViewModel
+import com.example.expensetracker.presentation.statistics.StatisticsFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.YearMonth
@@ -158,6 +159,12 @@ class ExpenseListFragment : Fragment() {
         }
         binding.btnNext.setOnClickListener {
             viewModel.nextMonth()
+        }
+        binding.btnStatistics.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.container, StatisticsFragment())
+                .addToBackStack(null)
+                .commit()
         }
     }
 
