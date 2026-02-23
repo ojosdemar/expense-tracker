@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.domain.usecase.AddExpenseUseCase
+import com.example.expensetracker.domain.usecase.GetExpensesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddExpenseViewModel @Inject constructor(
-    private val addExpenseUseCase: AddExpenseUseCase
+    private val addExpenseUseCase: AddExpenseUseCase,
+    private val getExpensesUseCase: GetExpensesUseCase
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(AddExpenseUiState())
@@ -24,6 +26,22 @@ class AddExpenseViewModel @Inject constructor(
     
     private val _events = MutableSharedFlow<AddExpenseEvent>()
     val events: SharedFlow<AddExpenseEvent> = _events
+    
+    fun loadExpense(expenseId: Long) {
+        viewModelScope.launch {
+            getExpensesUseCase().collect { expenses ->
+                val expense = expenses.find { it.id == expenseId }
+                expense?.let {
+                    _uiState.value = AddExpenseUiState(
+                        amount = it.amount.toString(),
+                        description = it.description,
+                        selectedCategory = it.category,
+                        selectedDate = it.date
+                    )
+                }
+            }
+        }
+    }
     
     fun onAmountChanged(amount: String) {
         _uiState.value = _uiState.value.copy(amount = amount)
@@ -70,6 +88,14 @@ class AddExpenseViewModel @Inject constructor(
                         }
                 }
             }
+        }
+    }
+    
+    fun updateExpense(expenseId: Long) {
+        // TODO: Добавить UpdateExpenseUseCase
+        // Пока просто закрываем
+        viewModelScope.launch {
+            _events.emit(AddExpenseEvent.Success)
         }
     }
     
