@@ -9,7 +9,14 @@ class AddExpenseUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(expense: Expense): Result<Long> {
         return try {
-            val id = repository.addExpense(expense)
+            val id = if (expense.id == 0L) {
+                // Новая запись
+                repository.addExpense(expense)
+            } else {
+                // Обновление существующей
+                repository.updateExpense(expense)
+                expense.id
+            }
             Result.success(id)
         } catch (e: Exception) {
             Result.failure(e)
