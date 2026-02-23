@@ -5,14 +5,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.expensetracker.R
 import com.example.expensetracker.databinding.FragmentStatisticsBinding
 import com.example.expensetracker.presentation.common.DateUtils
 import com.example.expensetracker.presentation.main.MainViewModel
+import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
@@ -44,17 +47,34 @@ class StatisticsFragment : Fragment() {
     }
 
     private fun setupChart() {
+        val textColor = getTextColor()
+        
         binding.pieChart.apply {
             description.isEnabled = false
             isRotationEnabled = true
             isHighlightPerTapEnabled = true
-            legend.isEnabled = true
-            legend.textSize = 12f
-            setEntryLabelTextSize(12f)
-            setEntryLabelColor(Color.BLACK)
             setUsePercentValues(true)
             setDrawEntryLabels(false)
+            setHoleColor(Color.TRANSPARENT)
+            
+            legend.apply {
+                isEnabled = true
+                textSize = 12f
+                textColor = textColor
+                verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
+                horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
+                orientation = Legend.LegendOrientation.HORIZONTAL
+                setDrawInside(false)
+                xEntrySpace = 10f
+                yEntrySpace = 5f
+            }
         }
+    }
+
+    private fun getTextColor(): Int {
+        val typedValue = android.util.TypedValue()
+        requireContext().theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+        return typedValue.data
     }
 
     private fun setupButtons() {
@@ -91,11 +111,14 @@ class StatisticsFragment : Fragment() {
             Color.parseColor(category.color)
         }
 
+        val textColor = getTextColor()
+
         val dataSet = PieDataSet(entries, "").apply {
             this.colors = colors
             valueTextSize = 14f
             valueTextColor = Color.WHITE
             sliceSpace = 3f
+            selectionShift = 10f
         }
 
         val pieData = PieData(dataSet).apply {
@@ -106,6 +129,8 @@ class StatisticsFragment : Fragment() {
             this.data = pieData
             centerText = "Всего\n${DateUtils.formatAmount(total)}"
             setCenterTextSize(16f)
+            setCenterTextColor(textColor)
+            animateY(1000)
             invalidate()
         }
     }
@@ -115,13 +140,28 @@ class StatisticsFragment : Fragment() {
             .filter { it.second > 0 }
             .sortedByDescending { it.second }
 
-        val detailsBuilder = StringBuilder()
+        binding.categoriesContainer.removeAllViews()
+        
         sortedCategories.forEach { (category, amount) ->
             val percentage = if (total > 0) (amount / total * 100) else 0.0
-            detailsBuilder.append("${category.displayName}: ${DateUtils.formatAmount(amount)} (${String.format("%.1f", percentage)}%)\n")
+            
+            val itemView = layoutInflater.inflate(R.layout.item_category_stat, binding.categoriesContainer, false)
+            
+            val colorIndicator = itemView.findViewById<View>(R.id.color_indicator)
+            val tvCategory = itemView.findViewById<android.widget.TextView>(R.id.tv_category)
+            val tvAmount = itemView.findViewById<android.widget.TextView>(R.id.tv_amount)
+            val tvPercent = itemView.findViewById<android.widget.TextView>(R.id.tv_percent)
+            val progressBar = itemView.findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.progress_bar)
+            
+            colorIndicator.setBackgroundColor(Color.parseColor(category.color))
+            tvCategory.text = category.displayName
+            tvAmount.text = DateUtils.formatAmount(amount)
+            tvPercent.text = String.format("%.1f%%", percentage)
+            progressBar.progress = percentage.toInt()
+            progressBar.setIndicatorColor(Color.parseColor(category.color))
+            
+            binding.categoriesContainer.addView(itemView)
         }
-
-        binding.tvDetails.text = detailsBuilder.toString().trim()
     }
 
     override fun onDestroyView() {
