@@ -10,62 +10,52 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.expensetracker.R
 import com.example.expensetracker.databinding.ActivityMainBinding
+import com.example.expensetracker.presentation.add.AddExpenseFragment
 import com.example.expensetracker.presentation.common.DateUtils
 import com.example.expensetracker.presentation.list.ExpenseListFragment
-import com.example.expensetracker.presentation.add.AddExpenseFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-    
+
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
         try {
             Log.d("ExpenseTracker", "Starting MainActivity")
             binding = ActivityMainBinding.inflate(layoutInflater)
             setContentView(binding.root)
-            
             setSupportActionBar(binding.toolbar)
-            
+
             if (savedInstanceState == null) {
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.container, ExpenseListFragment())
                     .commit()
             }
-            
+
             binding.fabAdd.setOnClickListener {
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.container, AddExpenseFragment())
                     .addToBackStack(null)
                     .commit()
             }
-            
+
             observeViewModel()
             Log.d("ExpenseTracker", "MainActivity created successfully")
-            
         } catch (e: Exception) {
             Log.e("ExpenseTracker", "Error in onCreate", e)
             Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
-    
+
     private fun observeViewModel() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.selectedMonth.collect { month ->
-                    // Обновляем и заголовок, и toolbar
-                    val monthText = DateUtils.formatMonth(month)
-                    supportActionBar?.title = monthText
-                    // Обновляем TextView в фрагменте через findFragment
-                    val fragment = supportFragmentManager.findFragmentById(R.id.container)
-                    if (fragment is ExpenseListFragment) {
-                        fragment.updateMonthText(monthText)
-                    }
+                    supportActionBar?.title = DateUtils.formatMonth(month)
                 }
             }
         }
