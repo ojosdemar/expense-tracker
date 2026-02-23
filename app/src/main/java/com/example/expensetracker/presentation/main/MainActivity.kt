@@ -11,7 +11,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.expensetracker.R
 import com.example.expensetracker.databinding.ActivityMainBinding
 import com.example.expensetracker.presentation.add.AddExpenseFragment
-import com.example.expensetracker.presentation.common.DateUtils
 import com.example.expensetracker.presentation.list.ExpenseListFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -43,21 +42,10 @@ class MainActivity : AppCompatActivity() {
                     .commit()
             }
 
-            observeViewModel()
             Log.d("ExpenseTracker", "MainActivity created successfully")
         } catch (e: Exception) {
             Log.e("ExpenseTracker", "Error in onCreate", e)
             Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun observeViewModel() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.selectedMonth.collect { month ->
-                    supportActionBar?.title = DateUtils.formatMonth(month)
-                }
-            }
         }
     }
 }
