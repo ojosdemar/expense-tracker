@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.expensetracker.R
 import com.example.expensetracker.databinding.FragmentExpenseListBinding
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.presentation.add.AddExpenseFragment
@@ -50,11 +51,9 @@ class ExpenseListFragment : Fragment() {
     private fun setupRecyclerView() {
         adapter = ExpenseListAdapter(
             onItemClick = { expense ->
-                // Редактирование при клике
                 openEditExpense(expense)
             },
             onItemLongClick = { expense ->
-                // Удаление при долгом нажатии
                 showDeleteDialog(expense)
             }
         )
@@ -73,7 +72,7 @@ class ExpenseListFragment : Fragment() {
 
     private fun openEditExpense(expense: Expense) {
         parentFragmentManager.beginTransaction()
-            .replace(com.example.expensetracker.R.id.container, AddExpenseFragment.newInstance(expense))
+            .replace(R.id.container, AddExpenseFragment.newInstance(expense))
             .addToBackStack(null)
             .commit()
     }
@@ -83,7 +82,8 @@ class ExpenseListFragment : Fragment() {
             .setTitle("Удалить запись")
             .setMessage("Вы уверены, что хотите удалить \"${expense.description}\"?")
             .setPositiveButton("Удалить") { _, _ ->
-                viewModel.deleteExpense(expense)
+                // TODO: Добавить DeleteExpenseUseCase в MainViewModel
+                Toast.makeText(context, "Удаление пока не реализовано", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Отмена", null)
             .show()
@@ -106,15 +106,6 @@ class ExpenseListFragment : Fragment() {
                     viewModel.statistics.collect { stats ->
                         stats?.let {
                             binding.tvTotal.text = DateUtils.formatAmount(it.totalAmount)
-                        }
-                    }
-                }
-                launch {
-                    viewModel.events.collect { event ->
-                        when (event) {
-                            is MainViewModel.MainEvent.ShowMessage -> {
-                                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
-                            }
                         }
                     }
                 }
