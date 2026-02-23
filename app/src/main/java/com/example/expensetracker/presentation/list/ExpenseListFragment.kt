@@ -21,6 +21,9 @@ import com.example.expensetracker.presentation.common.DateUtils
 import com.example.expensetracker.presentation.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.time.YearMonth
+import java.time.format.TextStyle
+import java.util.Locale
 
 @AndroidEntryPoint
 class ExpenseListFragment : Fragment() {
@@ -82,8 +85,7 @@ class ExpenseListFragment : Fragment() {
             .setTitle("Удалить запись")
             .setMessage("Вы уверены, что хотите удалить \"${expense.description}\"?")
             .setPositiveButton("Удалить") { _, _ ->
-                // TODO: Добавить DeleteExpenseUseCase в MainViewModel
-                Toast.makeText(context, "Удаление пока не реализовано", Toast.LENGTH_SHORT).show()
+                viewModel.deleteExpense(expense)
             }
             .setNegativeButton("Отмена", null)
             .show()
@@ -109,8 +111,19 @@ class ExpenseListFragment : Fragment() {
                         }
                     }
                 }
+                launch {
+                    viewModel.selectedMonth.collect { month ->
+                        updateMonthText(month)
+                    }
+                }
             }
         }
+    }
+
+    private fun updateMonthText(yearMonth: YearMonth) {
+        val monthName = yearMonth.month.getDisplayName(TextStyle.FULL_STANDALONE, Locale("ru"))
+        val capitalized = monthName.replaceFirstChar { it.uppercase() }
+        binding.tvMonth.text = "$capitalized ${yearMonth.year}"
     }
 
     override fun onDestroyView() {
