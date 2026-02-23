@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -14,36 +15,29 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.expensetracker.databinding.FragmentAddExpenseBinding
 import com.example.expensetracker.domain.model.Category
+import com.example.expensetracker.domain.model.Expense
+import com.example.expensetracker.presentation.common.DateUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @AndroidEntryPoint
 class AddExpenseFragment : Fragment() {
-    
+
     private var _binding: FragmentAddExpenseBinding? = null
     private val binding get() = _binding!!
-    
     private val viewModel: AddExpenseViewModel by viewModels()
-    private var expenseId: Long = 0
-    
+
     companion object {
-        private const val ARG_EXPENSE_ID = "expense_id"
+        private const val ARG_EXPENSE = "expense"
         
-        fun newInstance(expenseId: Long = 0): AddExpenseFragment {
+        fun newInstance(expense: Expense? = null): AddExpenseFragment {
             return AddExpenseFragment().apply {
-                arguments = Bundle().apply {
-                    putLong(ARG_EXPENSE_ID, expenseId)
-                }
+                arguments = bundleOf(ARG_EXPENSE to expense)
             }
         }
     }
-    
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        expenseId = arguments?.getLong(ARG_EXPENSE_ID) ?: 0
-    }
-    
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -52,13 +46,15 @@ class AddExpenseFragment : Fragment() {
         _binding = FragmentAddExpenseBinding.inflate(inflater, container, false)
         return binding.root
     }
-    
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        if (expenseId > 0) {
-            binding.btnSave.text = "Обновить"
-            viewModel.loadExpense(expenseId)
+        // Загрузка существующей записи для редактирования
+        @Suppress("DEPRECATION")
+        val expense = arguments?.getSerializable(ARG_EXPENSE) as? Expense
+        expense?.let {
+            viewModel.loadExpense(it)
         }
         
         setupCategoryDropdown()
@@ -66,7 +62,7 @@ class AddExpenseFragment : Fragment() {
         setupButtons()
         observeViewModel()
     }
-    
+
     private fun setupCategoryDropdown() {
         val categories = Category.values().map { it.displayName }.toTypedArray()
         val adapter = ArrayAdapter(
@@ -79,52 +75,53 @@ class AddExpenseFragment : Fragment() {
             viewModel.onCategorySelected(Category.values()[position])
         }
     }
-    
+
     private fun setupDatePicker() {
         binding.etDate.setOnClickListener {
-            val today = LocalDate.now()
+            val currentDate = viewModel.uiState.value.selectedDate
             DatePickerDialog(
                 requireContext(),
                 { _, year, month, day ->
                     val date = LocalDate.of(year, month + 1, day)
                     viewModel.onDateSelected(date)
-                    binding.etDate.setText(date.toString())
                 },
-                today.year,
-                today.monthValue - 1,
-                today.dayOfMonth
+                currentDate.year,
+                currentDate.monthValue - 1,
+                currentDate.dayOfMonth
             ).show()
         }
     }
-    
+
     private fun setupButtons() {
         binding.btnSave.setOnClickListener {
-            viewModel.onAmountChanged(binding.etAmount.text?.toString() ?: "")
-            viewModel.onDescriptionChanged(binding.etDescription.text?.toString() ?: "")
-            
-            if (expenseId > 0) {
-                viewModel.updateExpense(expenseId)
-            } else {
-                viewModel.saveExpense()
-            }
+            viewModel.onAmountChanged(binding.etAmount.text.toString())
+            viewModel.onDescriptionChanged(binding.etDescription.text.toString())
+            viewModel.saveExpense()
         }
-        
         binding.btnCancel.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
     }
-    
+
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.uiState.collect { state ->
-                        if (expenseId > 0 && state.amount.isNotEmpty() && binding.etAmount.text?.isEmpty() != false) {
-                            binding.etAmount.setText(state.amount)
-                            binding.etDescription.setText(state.description)
-                            binding.etDate.setText(state.selectedDate.toString())
-                            binding.dropdownCategory.setText(state.selectedCategory.displayName, false)
-                        }
+                        // Обновляем UI при изменении состояния
+                        binding.etAmount.setText(state.amount)
+                        binding.etAmount.setSelection(state.amount.length)
+                        
+                        binding.etDescription.setText(state.description)
+                        binding.etDescription.setSelection(state.description.length)
+                        
+                        binding.dropdownCategory.setText(state.selectedCategory.displayName, false)
+                        
+                        // Исправлено: правильное отображение даты
+                        binding.etDate.setText(DateUtils.formatDate(state.selectedDate))
+                        
+                        // Обновляем текст кнопки
+                        binding.btnSave.text = if (state.isEditing) "Обновить" else "Сохранить"
                         
                         state.error?.let { error ->
                             Toast.makeText(context, error, Toast.LENGTH_LONG).show()
@@ -132,11 +129,11 @@ class AddExpenseFragment : Fragment() {
                         }
                     }
                 }
-                
                 launch {
                     viewModel.events.collect { event ->
                         when (event) {
-                            is AddExpenseViewModel.AddExpenseEvent.Success -> {
+                            is AddExpenseViewModel.AddExpenseEvent.Success,
+                            is AddExpenseViewModel.AddExpenseEvent.Deleted -> {
                                 parentFragmentManager.popBackStack()
                             }
                         }
@@ -145,7 +142,7 @@ class AddExpenseFragment : Fragment() {
             }
         }
     }
-    
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
