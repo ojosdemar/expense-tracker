@@ -58,7 +58,6 @@ class AddExpenseFragment : Fragment() {
         
         if (expenseId > 0) {
             binding.btnSave.text = "Обновить"
-            // Загружаем данные для редактирования
             viewModel.loadExpense(expenseId)
         }
         
@@ -100,8 +99,8 @@ class AddExpenseFragment : Fragment() {
     
     private fun setupButtons() {
         binding.btnSave.setOnClickListener {
-            viewModel.onAmountChanged(binding.etAmount.text.toString())
-            viewModel.onDescriptionChanged(binding.etDescription.text.toString())
+            viewModel.onAmountChanged(binding.etAmount.text?.toString() ?: "")
+            viewModel.onDescriptionChanged(binding.etDescription.text?.toString() ?: "")
             
             if (expenseId > 0) {
                 viewModel.updateExpense(expenseId)
@@ -116,39 +115,36 @@ class AddExpenseFragment : Fragment() {
     }
     
     private fun observeViewModel() {
- private fun observeViewModel() {
-    viewLifecycleOwner.lifecycleScope.launch {
-        viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            launch {
-                viewModel.uiState.collect { state ->
-                    // Заполняем поля при редактировании
-                    if (expenseId > 0 && state.amount.isNotEmpty() && binding.etAmount.text?.isEmpty() != false) {
-                        binding.etAmount.setText(state.amount)
-                        binding.etDescription.setText(state.description)
-                        binding.etDate.setText(state.selectedDate.toString())
-                        binding.dropdownCategory.setText(state.selectedCategory.displayName, false)
-                    }
-                    
-                    state.error?.let { error ->
-                        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-                        viewModel.clearError()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.uiState.collect { state ->
+                        if (expenseId > 0 && state.amount.isNotEmpty() && binding.etAmount.text?.isEmpty() != false) {
+                            binding.etAmount.setText(state.amount)
+                            binding.etDescription.setText(state.description)
+                            binding.etDate.setText(state.selectedDate.toString())
+                            binding.dropdownCategory.setText(state.selectedCategory.displayName, false)
+                        }
+                        
+                        state.error?.let { error ->
+                            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                            viewModel.clearError()
+                        }
                     }
                 }
-            }
-            
-            launch {
-                viewModel.events.collect { event ->
-                    when (event) {
-                        is AddExpenseViewModel.AddExpenseEvent.Success -> {
-                            parentFragmentManager.popBackStack()
+                
+                launch {
+                    viewModel.events.collect { event ->
+                        when (event) {
+                            is AddExpenseViewModel.AddExpenseEvent.Success -> {
+                                parentFragmentManager.popBackStack()
+                            }
                         }
                     }
                 }
             }
         }
     }
-}
-             
     
     override fun onDestroyView() {
         super.onDestroyView()
