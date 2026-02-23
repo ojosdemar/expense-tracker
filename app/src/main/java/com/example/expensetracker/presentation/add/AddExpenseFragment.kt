@@ -27,6 +27,7 @@ class AddExpenseFragment : Fragment() {
     private var _binding: FragmentAddExpenseBinding? = null
     private val binding get() = _binding!!
     private val viewModel: AddExpenseViewModel by viewModels()
+    private var isFirstLoad = true
 
     companion object {
         private const val ARG_EXPENSE = "expense"
@@ -83,6 +84,7 @@ class AddExpenseFragment : Fragment() {
                 { _, year, month, day ->
                     val date = LocalDate.of(year, month + 1, day)
                     viewModel.onDateSelected(date)
+                    binding.etDate.setText(DateUtils.formatDate(date))
                 },
                 currentDate.year,
                 currentDate.monthValue - 1,
@@ -107,26 +109,17 @@ class AddExpenseFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.uiState.collect { state ->
-                        if (binding.etAmount.text.toString() != state.amount) {
+                        if (isFirstLoad) {
                             binding.etAmount.setText(state.amount)
-                            binding.etAmount.setSelection(state.amount.length)
-                        }
-                        
-                        if (binding.etDescription.text.toString() != state.description) {
                             binding.etDescription.setText(state.description)
-                            binding.etDescription.setSelection(state.description.length)
-                        }
-                        
-                        if (binding.dropdownCategory.text.toString() != state.selectedCategory.displayName) {
                             binding.dropdownCategory.setText(state.selectedCategory.displayName, false)
+                            binding.etDate.setText(DateUtils.formatDate(state.selectedDate))
+                            binding.btnSave.text = if (state.isEditing) "Обновить" else "Сохранить"
+                            isFirstLoad = false
+                        } else {
+                            binding.etDate.setText(DateUtils.formatDate(state.selectedDate))
+                            binding.btnSave.text = if (state.isEditing) "Обновить" else "Сохранить"
                         }
-                        
-                        val dateText = DateUtils.formatDate(state.selectedDate)
-                        if (binding.etDate.text.toString() != dateText) {
-                            binding.etDate.setText(dateText)
-                        }
-                        
-                        binding.btnSave.text = if (state.isEditing) "Обновить" else "Сохранить"
                         
                         state.error?.let { error ->
                             Toast.makeText(context, error, Toast.LENGTH_LONG).show()
