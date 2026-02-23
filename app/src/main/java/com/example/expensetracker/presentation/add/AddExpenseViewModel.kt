@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.domain.usecase.AddExpenseUseCase
+import com.example.expensetracker.domain.usecase.DeleteExpenseUseCase
 import com.example.expensetracker.domain.usecase.GetExpensesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -18,51 +19,48 @@ import javax.inject.Inject
 @HiltViewModel
 class AddExpenseViewModel @Inject constructor(
     private val addExpenseUseCase: AddExpenseUseCase,
+    private val deleteExpenseUseCase: DeleteExpenseUseCase,
     private val getExpensesUseCase: GetExpensesUseCase
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(AddExpenseUiState())
     val uiState: StateFlow<AddExpenseUiState> = _uiState
-    
+
     private val _events = MutableSharedFlow<AddExpenseEvent>()
     val events: SharedFlow<AddExpenseEvent> = _events
-    
-    fun loadExpense(expenseId: Long) {
-        viewModelScope.launch {
-            getExpensesUseCase().collect { expenses ->
-                val expense = expenses.find { it.id == expenseId }
-                expense?.let {
-                    _uiState.value = AddExpenseUiState(
-                        amount = it.amount.toString(),
-                        description = it.description,
-                        selectedCategory = it.category,
-                        selectedDate = it.date
-                    )
-                }
-            }
-        }
+
+    private var editingExpenseId: Long = 0
+
+    fun loadExpense(expense: Expense) {
+        editingExpenseId = expense.id
+        _uiState.value = AddExpenseUiState(
+            amount = expense.amount.toString(),
+            description = expense.description,
+            selectedCategory = expense.category,
+            selectedDate = expense.date,
+            isEditing = true
+        )
     }
-    
+
     fun onAmountChanged(amount: String) {
         _uiState.value = _uiState.value.copy(amount = amount)
     }
-    
+
     fun onDescriptionChanged(description: String) {
         _uiState.value = _uiState.value.copy(description = description)
     }
-    
+
     fun onCategorySelected(category: Category) {
         _uiState.value = _uiState.value.copy(selectedCategory = category)
     }
-    
+
     fun onDateSelected(date: LocalDate) {
         _uiState.value = _uiState.value.copy(selectedDate = date)
     }
-    
+
     fun saveExpense() {
         val state = _uiState.value
         val amount = state.amount.toDoubleOrNull()
-        
         when {
             amount == null || amount <= 0 -> {
                 _uiState.value = state.copy(error = "Введите корректную сумму")
@@ -73,12 +71,12 @@ class AddExpenseViewModel @Inject constructor(
             else -> {
                 viewModelScope.launch {
                     val expense = Expense(
+                        id = editingExpenseId,
                         amount = amount,
                         description = state.description,
                         category = state.selectedCategory,
                         date = state.selectedDate
                     )
-                    
                     addExpenseUseCase(expense)
                         .onSuccess {
                             _events.emit(AddExpenseEvent.Success)
@@ -90,29 +88,35 @@ class AddExpenseViewModel @Inject constructor(
             }
         }
     }
-    
-    fun updateExpense(expenseId: Long) {
-        // TODO: Добавить UpdateExpenseUseCase
-        // Пока просто закрываем
+
+    fun deleteExpense(expense: Expense) {
         viewModelScope.launch {
-            _events.emit(AddExpenseEvent.Success)
+            deleteExpenseUseCase(expense)
+                .onSuccess {
+                    _events.emit(AddExpenseEvent.Deleted)
+                }
+                .onFailure { e ->
+                    _uiState.value = _uiState.value.copy(error = e.message ?: "Ошибка удаления")
+                }
         }
     }
-    
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
     }
-    
+
     data class AddExpenseUiState(
         val amount: String = "",
         val description: String = "",
         val selectedCategory: Category = Category.OTHER,
         val selectedDate: LocalDate = LocalDate.now(),
         val isLoading: Boolean = false,
+        val isEditing: Boolean = false,
         val error: String? = null
     )
-    
+
     sealed class AddExpenseEvent {
         object Success : AddExpenseEvent()
+        object Deleted : AddExpenseEvent()
     }
 }
