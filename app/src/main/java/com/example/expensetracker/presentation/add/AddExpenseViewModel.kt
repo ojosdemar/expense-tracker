@@ -5,8 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.domain.usecase.AddExpenseUseCase
-import com.example.expensetracker.domain.usecase.DeleteExpenseUseCase
-import com.example.expensetracker.domain.usecase.GetExpensesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,9 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddExpenseViewModel @Inject constructor(
-    private val addExpenseUseCase: AddExpenseUseCase,
-    private val deleteExpenseUseCase: DeleteExpenseUseCase,
-    private val getExpensesUseCase: GetExpensesUseCase
+    private val addExpenseUseCase: AddExpenseUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddExpenseUiState())
@@ -89,18 +85,6 @@ class AddExpenseViewModel @Inject constructor(
         }
     }
 
-    fun deleteExpense(expense: Expense) {
-        viewModelScope.launch {
-            deleteExpenseUseCase(expense)
-                .onSuccess {
-                    _events.emit(AddExpenseEvent.Deleted)
-                }
-                .onFailure { e ->
-                    _uiState.value = _uiState.value.copy(error = e.message ?: "Ошибка удаления")
-                }
-        }
-    }
-
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
     }
@@ -117,6 +101,5 @@ class AddExpenseViewModel @Inject constructor(
 
     sealed class AddExpenseEvent {
         object Success : AddExpenseEvent()
-        object Deleted : AddExpenseEvent()
     }
 }
