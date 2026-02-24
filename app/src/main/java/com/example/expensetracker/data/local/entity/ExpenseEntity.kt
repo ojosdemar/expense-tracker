@@ -2,7 +2,6 @@ package com.example.expensetracker.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.io.Serializable
 
 @Entity(tableName = "expenses")
 data class ExpenseEntity(
@@ -10,7 +9,7 @@ data class ExpenseEntity(
     val id: Long = 0,
     val amount: Double,
     val description: String,
-    val categoryName: String,
+    val categoryId: String,
     val dateMillis: Long,
     val createdAt: Long
-) : Serializable
+)
