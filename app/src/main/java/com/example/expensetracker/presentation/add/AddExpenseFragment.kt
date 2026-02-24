@@ -64,15 +64,26 @@ class AddExpenseFragment : Fragment() {
     }
 
     private fun setupCategoryDropdown() {
-        val categories = Category.values().map { it.displayName }.toTypedArray()
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_dropdown_item_1line,
-            categories
-        )
-        binding.dropdownCategory.setAdapter(adapter)
-        binding.dropdownCategory.setOnItemClickListener { _, _, position, _ ->
-            viewModel.onCategorySelected(Category.values()[position])
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.categories.collect { categories ->
+                    if (categories.isNotEmpty()) {
+                        val adapter = ArrayAdapter(
+                            requireContext(),
+                            android.R.layout.simple_dropdown_item_1line,
+                            categories.map { it.displayName }
+                        )
+                        binding.dropdownCategory.setAdapter(adapter)
+                        binding.dropdownCategory.setOnItemClickListener { _, _, position, _ ->
+                            viewModel.onCategorySelected(categories[position])
+                        }
+                        
+                        if (isFirstLoad && viewModel.uiState.value.selectedCategory == null) {
+                            viewModel.onCategorySelected(categories.first())
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -112,13 +123,14 @@ class AddExpenseFragment : Fragment() {
                         if (isFirstLoad) {
                             binding.etAmount.setText(state.amount)
                             binding.etDescription.setText(state.description)
-                            binding.dropdownCategory.setText(state.selectedCategory.displayName, false)
+                            state.selectedCategory?.let { category ->
+                                binding.dropdownCategory.setText(category.displayName, false)
+                            }
                             binding.etDate.setText(DateUtils.formatDate(state.selectedDate))
                             binding.btnSave.text = if (state.isEditing) "Обновить" else "Сохранить"
                             isFirstLoad = false
                         } else {
                             binding.etDate.setText(DateUtils.formatDate(state.selectedDate))
-                            binding.btnSave.text = if (state.isEditing) "Обновить" else "Сохранить"
                         }
                         
                         state.error?.let { error ->
