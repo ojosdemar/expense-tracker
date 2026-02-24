@@ -5,25 +5,32 @@ import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.domain.usecase.AddExpenseUseCase
+import com.example.expensetracker.domain.usecase.GetCategoriesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class AddExpenseViewModel @Inject constructor(
-    private val addExpenseUseCase: AddExpenseUseCase
+    private val addExpenseUseCase: AddExpenseUseCase,
+    getCategoriesUseCase: GetCategoriesUseCase
 ) : ViewModel() {
+
+    val categories = getCategoriesUseCase()
+        .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.Lazily, emptyList())
 
     private val _uiState = MutableStateFlow(AddExpenseUiState())
     val uiState: StateFlow<AddExpenseUiState> = _uiState
 
     private val _events = MutableSharedFlow<AddExpenseEvent>()
-    val events: SharedFlow<AddExpenseEvent> = _events
+    val events: SharedFlow<AddExpenseEvent> = _events.asSharedFlow()
 
     private var editingExpenseId: Long = 0
 
@@ -92,7 +99,7 @@ class AddExpenseViewModel @Inject constructor(
     data class AddExpenseUiState(
         val amount: String = "",
         val description: String = "",
-        val selectedCategory: Category = Category.OTHER,
+        val selectedCategory: Category? = null,
         val selectedDate: LocalDate = LocalDate.now(),
         val isLoading: Boolean = false,
         val isEditing: Boolean = false,
