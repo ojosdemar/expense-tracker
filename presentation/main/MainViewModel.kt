@@ -9,6 +9,7 @@ import com.example.expensetracker.domain.usecase.GetCategoriesUseCase
 import com.example.expensetracker.domain.usecase.GetCategoryStatisticsUseCase
 import com.example.expensetracker.domain.usecase.GetExpensesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -33,9 +34,9 @@ class MainViewModel @Inject constructor(
     val categories: StateFlow<List<Category>> = getCategoriesUseCase()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    val expenses = _selectedMonth.flatMapLatest { month ->
+    val expenses: Flow<List<Expense>> = _selectedMonth.flatMapLatest { month ->
         getExpensesUseCase.byMonth(month)
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    }
 
     val statistics = _selectedMonth.flatMapLatest { month ->
         statisticsUseCase.getDetailedStatistics(month)
