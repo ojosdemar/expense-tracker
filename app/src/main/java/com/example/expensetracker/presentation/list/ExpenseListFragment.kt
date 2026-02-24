@@ -63,12 +63,6 @@ class ExpenseListFragment : Fragment() {
         adapter = ExpenseListAdapter(
             onItemClick = { expense ->
                 openEditExpense(expense)
-            },
-            getCategoryName = { categoryId ->
-                viewModel.categories.value.find { it.id == categoryId }?.displayName ?: categoryId
-            },
-            getCategoryColor = { categoryId ->
-                viewModel.categories.value.find { it.id == categoryId }?.color ?: "#FF6B6B"
             }
         )
         binding.recyclerExpenses.layoutManager = LinearLayoutManager(context)
@@ -199,6 +193,11 @@ class ExpenseListFragment : Fragment() {
                             if (expenses.isEmpty()) View.VISIBLE else View.GONE
                         binding.recyclerExpenses.visibility =
                             if (expenses.isEmpty()) View.GONE else View.VISIBLE
+                    }
+                }
+                launch {
+                    viewModel.categories.collect { categories ->
+                        adapter.setCategories(categories)
                     }
                 }
                 launch {
