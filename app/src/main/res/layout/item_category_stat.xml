@@ -43,18 +43,16 @@
             android:layout_marginStart="8dp"
             android:text="50%"
             android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textAlignment="end"
+            android:gravity="end"
             android:textColor="?android:attr/textColorSecondary" />
     </LinearLayout>
 
-    <com.google.android.material.progressindicator.LinearProgressIndicator
+    <ProgressBar
         android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="4dp"
         android:layout_marginTop="8dp"
         android:layout_marginStart="24dp"
-        app:trackThickness="4dp"
-        app:indicatorColor="#FF6B6B"
-        app:trackColor="?attr/colorSurfaceVariant"
-        app:indicatorCornerRadius="2dp" />
+        android:progressDrawable="@drawable/progress_drawable" />
 </LinearLayout>
