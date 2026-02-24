@@ -5,11 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.expensetracker.R
 import com.example.expensetracker.databinding.FragmentStatisticsBinding
 import com.example.expensetracker.presentation.common.DateUtils
 import com.example.expensetracker.presentation.main.MainViewModel
@@ -18,6 +20,7 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.PercentFormatter
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -55,17 +58,15 @@ class StatisticsFragment : Fragment() {
             setDrawEntryLabels(false)
             setHoleColor(Color.TRANSPARENT)
             
-            legend.apply {
-                isEnabled = true
-                textSize = 12f
-                textColor = textColor
-                verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
-                horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
-                orientation = Legend.LegendOrientation.HORIZONTAL
-                setDrawInside(false)
-                xEntrySpace = 10f
-                yEntrySpace = 5f
-            }
+            legend.isEnabled = true
+            legend.textSize = 12f
+            legend.textColor = textColor
+            legend.verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
+            legend.horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
+            legend.orientation = Legend.LegendOrientation.HORIZONTAL
+            legend.setDrawInside(false)
+            legend.xEntrySpace = 10f
+            legend.yEntrySpace = 5f
         }
     }
 
@@ -145,11 +146,11 @@ class StatisticsFragment : Fragment() {
             
             val itemView = layoutInflater.inflate(R.layout.item_category_stat, binding.categoriesContainer, false)
             
-            val colorIndicator = itemView.findViewById<View>(R.id.color_indicator)
-            val tvCategory = itemView.findViewById<android.widget.TextView>(R.id.tv_category)
-            val tvAmount = itemView.findViewById<android.widget.TextView>(R.id.tv_amount)
-            val tvPercent = itemView.findViewById<android.widget.TextView>(R.id.tv_percent)
-            val progressBar = itemView.findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.progress_bar)
+            val colorIndicator: View = itemView.findViewById(R.id.color_indicator)
+            val tvCategory: TextView = itemView.findViewById(R.id.tv_category)
+            val tvAmount: TextView = itemView.findViewById(R.id.tv_amount)
+            val tvPercent: TextView = itemView.findViewById(R.id.tv_percent)
+            val progressBar: LinearProgressIndicator = itemView.findViewById(R.id.progress_bar)
             
             colorIndicator.setBackgroundColor(Color.parseColor(category.color))
             tvCategory.text = category.displayName
