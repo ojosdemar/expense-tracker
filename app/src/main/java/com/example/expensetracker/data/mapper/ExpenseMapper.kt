@@ -7,12 +7,12 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 object ExpenseMapper {
-    fun toDomain(entity: ExpenseEntity, categoryId: String): Expense {
+    fun toDomain(entity: ExpenseEntity): Expense {
         return Expense(
             id = entity.id,
             amount = entity.amount,
             description = entity.description,
-            categoryId = categoryId,
+            categoryId = entity.categoryId,
             date = Instant.ofEpochMilli(entity.dateMillis)
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate(),
