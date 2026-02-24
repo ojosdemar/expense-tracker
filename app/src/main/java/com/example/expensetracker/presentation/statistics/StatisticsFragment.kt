@@ -67,6 +67,8 @@ class StatisticsFragment : Fragment() {
             legend.setDrawInside(false)
             legend.xEntrySpace = 10f
             legend.yEntrySpace = 5f
+            legend.formSize = 12f
+            legend.formToTextSpace = 8f
         }
     }
 
