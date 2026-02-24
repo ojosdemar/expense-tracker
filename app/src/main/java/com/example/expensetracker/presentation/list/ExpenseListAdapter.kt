@@ -14,13 +14,15 @@ import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.presentation.common.DateUtils
 
 class ExpenseListAdapter(
-    private val onItemClick: (Expense) -> Unit
+    private val onItemClick: (Expense) -> Unit,
+    private val getCategoryName: (String) -> String,
+    private val getCategoryColor: (String) -> String
 ) : ListAdapter<Expense, ExpenseListAdapter.ViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_expense, parent, false)
-        return ViewHolder(view, onItemClick)
+        return ViewHolder(view, onItemClick, getCategoryName, getCategoryColor)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -29,7 +31,9 @@ class ExpenseListAdapter(
 
     class ViewHolder(
         itemView: View,
-        private val onItemClick: (Expense) -> Unit
+        private val onItemClick: (Expense) -> Unit,
+        private val getCategoryName: (String) -> String,
+        private val getCategoryColor: (String) -> String
     ) : RecyclerView.ViewHolder(itemView) {
 
         private val tvDescription: TextView = itemView.findViewById(R.id.tv_description)
@@ -44,15 +48,16 @@ class ExpenseListAdapter(
             }
 
             tvDescription.text = expense.description
-            tvCategory.text = expense.category.displayName
+            tvCategory.text = getCategoryName(expense.categoryId)
             tvAmount.text = DateUtils.formatAmount(expense.amount)
             tvDate.text = DateUtils.formatShortDate(expense.date)
             
+            val color = getCategoryColor(expense.categoryId)
             val drawable = GradientDrawable(
                 GradientDrawable.Orientation.LEFT_RIGHT,
                 intArrayOf(
-                    Color.parseColor(expense.category.color),
-                    Color.parseColor(adjustColorBrightness(expense.category.color, 0.7f))
+                    Color.parseColor(color),
+                    Color.parseColor(adjustColorBrightness(color, 0.7f))
                 )
             )
             drawable.cornerRadius = 8f
