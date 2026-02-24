@@ -22,6 +22,7 @@ import com.example.expensetracker.R
 import com.example.expensetracker.databinding.FragmentExpenseListBinding
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.presentation.add.AddExpenseFragment
+import com.example.expensetracker.presentation.categories.CategoriesFragment
 import com.example.expensetracker.presentation.common.DateUtils
 import com.example.expensetracker.presentation.main.MainViewModel
 import com.example.expensetracker.presentation.statistics.StatisticsFragment
@@ -163,6 +164,12 @@ class ExpenseListFragment : Fragment() {
         binding.btnStatistics.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.container, StatisticsFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+        binding.btnCategories.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.container, CategoriesFragment())
                 .addToBackStack(null)
                 .commit()
         }
