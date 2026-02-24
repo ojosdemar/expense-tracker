@@ -99,4 +99,76 @@ class StatisticsFragment : Fragment() {
         }
     }
 
-    private fun updateChart(categoryTotals: Map<com.example.expensetracker
+    private fun updateChart(categoryTotals: Map<com.example.expensetracker.domain.model.Category, Double>, total: Double) {
+        val entries = categoryTotals.filter { it.value > 0 }.map { (category, amount) ->
+            PieEntry(amount.toFloat(), category.displayName)
+        }
+
+        if (entries.isEmpty()) {
+            binding.pieChart.clear()
+            binding.pieChart.centerText = "Нет данных"
+            return
+        }
+
+        val colors = categoryTotals.filter { it.value > 0 }.map { (category, _) ->
+            Color.parseColor(category.color)
+        }
+
+        val textColor = getTextColor()
+
+        val dataSet = PieDataSet(entries, "").apply {
+            this.colors = colors
+            valueTextSize = 14f
+            valueTextColor = Color.WHITE
+            sliceSpace = 3f
+            selectionShift = 10f
+        }
+
+        val pieData = PieData(dataSet).apply {
+            setValueFormatter(PercentFormatter(binding.pieChart))
+        }
+
+        binding.pieChart.apply {
+            this.data = pieData
+            centerText = "Всего\n${DateUtils.formatAmount(total)}"
+            setCenterTextSize(16f)
+            setCenterTextColor(textColor)
+            animateY(1000)
+            invalidate()
+        }
+    }
+
+    private fun updateDetails(categoryTotals: Map<com.example.expensetracker.domain.model.Category, Double>, total: Double) {
+        val sortedCategories = categoryTotals.toList()
+            .filter { it.second > 0 }
+            .sortedByDescending { it.second }
+
+        binding.categoriesContainer.removeAllViews()
+        
+        sortedCategories.forEach { (category, amount) ->
+            val percentage = if (total > 0) (amount / total * 100) else 0.0
+            
+            val itemView = layoutInflater.inflate(R.layout.item_category_stat, binding.categoriesContainer, false)
+            
+            val colorIndicator = itemView.findViewById<View>(R.id.color_indicator)
+            val tvCategory = itemView.findViewById<TextView>(R.id.tv_category)
+            val tvAmount = itemView.findViewById<TextView>(R.id.tv_amount)
+            val tvPercent = itemView.findViewById<TextView>(R.id.tv_percent)
+            val progressBar = itemView.findViewById<ProgressBar>(R.id.progress_bar)
+            
+            colorIndicator.setBackgroundColor(Color.parseColor(category.color))
+            tvCategory.text = category.displayName
+            tvAmount.text = DateUtils.formatAmount(amount)
+            tvPercent.text = String.format("%.1f%%", percentage)
+            progressBar.progress = percentage.toInt()
+            progressBar.progressDrawable.setColorFilter(Color.parseColor(category.color), PorterDuff.Mode.SRC_IN)
+            
+            binding.categoriesContainer.addView(itemView)
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
