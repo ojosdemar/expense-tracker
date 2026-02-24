@@ -14,7 +14,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.expensetracker.databinding.FragmentAddExpenseBinding
-import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.Expense
 import com.example.expensetracker.presentation.common.DateUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -75,11 +74,11 @@ class AddExpenseFragment : Fragment() {
                         )
                         binding.dropdownCategory.setAdapter(adapter)
                         binding.dropdownCategory.setOnItemClickListener { _, _, position, _ ->
-                            viewModel.onCategorySelected(categories[position])
+                            viewModel.onCategorySelected(categories[position].id)
                         }
                         
-                        if (isFirstLoad && viewModel.uiState.value.selectedCategory == null) {
-                            viewModel.onCategorySelected(categories.first())
+                        if (isFirstLoad && viewModel.uiState.value.selectedCategoryId == null) {
+                            viewModel.onCategorySelected(categories.first().id)
                         }
                     }
                 }
@@ -123,9 +122,12 @@ class AddExpenseFragment : Fragment() {
                         if (isFirstLoad) {
                             binding.etAmount.setText(state.amount)
                             binding.etDescription.setText(state.description)
-                            state.selectedCategory?.let { category ->
-                                binding.dropdownCategory.setText(category.displayName, false)
-                            }
+                            
+                            // Найти название категории по ID
+                            val categories = viewModel.categories.value
+                            val categoryName = categories.find { it.id == state.selectedCategoryId }?.displayName ?: ""
+                            binding.dropdownCategory.setText(categoryName, false)
+                            
                             binding.etDate.setText(DateUtils.formatDate(state.selectedDate))
                             binding.btnSave.text = if (state.isEditing) "Обновить" else "Сохранить"
                             isFirstLoad = false
