@@ -63,6 +63,12 @@ class ExpenseListFragment : Fragment() {
         adapter = ExpenseListAdapter(
             onItemClick = { expense ->
                 openEditExpense(expense)
+            },
+            getCategoryName = { categoryId ->
+                viewModel.categories.value.find { it.id == categoryId }?.displayName ?: categoryId
+            },
+            getCategoryColor = { categoryId ->
+                viewModel.categories.value.find { it.id == categoryId }?.color ?: "#FF6B6B"
             }
         )
         binding.recyclerExpenses.layoutManager = LinearLayoutManager(context)
