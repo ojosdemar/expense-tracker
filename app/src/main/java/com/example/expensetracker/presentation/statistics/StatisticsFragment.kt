@@ -1,20 +1,15 @@
 package com.example.expensetracker.presentation.statistics
 
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
-import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.expensetracker.R
 import com.example.expensetracker.databinding.FragmentStatisticsBinding
 import com.example.expensetracker.presentation.common.DateUtils
 import com.example.expensetracker.presentation.main.MainViewModel
@@ -110,14 +105,14 @@ class StatisticsFragment : Fragment() {
             return
         }
 
-        val colors = categoryTotals.filter { it.value > 0 }.map { (category, _) ->
+        val colorsList = categoryTotals.filter { it.value > 0 }.map { (category, _) ->
             Color.parseColor(category.color)
         }
 
         val textColor = getTextColor()
 
         val dataSet = PieDataSet(entries, "").apply {
-            this.colors = colors
+            setColors(colorsList)
             valueTextSize = 14f
             valueTextColor = Color.WHITE
             sliceSpace = 3f
@@ -129,7 +124,7 @@ class StatisticsFragment : Fragment() {
         }
 
         binding.pieChart.apply {
-            this.data = pieData
+            data = pieData
             centerText = "Всего\n${DateUtils.formatAmount(total)}"
             setCenterTextSize(16f)
             setCenterTextColor(textColor)
@@ -151,17 +146,17 @@ class StatisticsFragment : Fragment() {
             val itemView = layoutInflater.inflate(R.layout.item_category_stat, binding.categoriesContainer, false)
             
             val colorIndicator = itemView.findViewById<View>(R.id.color_indicator)
-            val tvCategory = itemView.findViewById<TextView>(R.id.tv_category)
-            val tvAmount = itemView.findViewById<TextView>(R.id.tv_amount)
-            val tvPercent = itemView.findViewById<TextView>(R.id.tv_percent)
-            val progressBar = itemView.findViewById<ProgressBar>(R.id.progress_bar)
+            val tvCategory = itemView.findViewById<android.widget.TextView>(R.id.tv_category)
+            val tvAmount = itemView.findViewById<android.widget.TextView>(R.id.tv_amount)
+            val tvPercent = itemView.findViewById<android.widget.TextView>(R.id.tv_percent)
+            val progressBar = itemView.findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.progress_bar)
             
             colorIndicator.setBackgroundColor(Color.parseColor(category.color))
             tvCategory.text = category.displayName
             tvAmount.text = DateUtils.formatAmount(amount)
             tvPercent.text = String.format("%.1f%%", percentage)
             progressBar.progress = percentage.toInt()
-            progressBar.progressDrawable.setColorFilter(Color.parseColor(category.color), PorterDuff.Mode.SRC_IN)
+            progressBar.setIndicatorColor(Color.parseColor(category.color))
             
             binding.categoriesContainer.addView(itemView)
         }
