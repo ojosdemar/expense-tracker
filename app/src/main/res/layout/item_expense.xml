@@ -1,78 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView 
+<!--
+    ИСПРАВЛЕНИЕ: заменён android:background="#ffff6b6b" (хардкод красного)
+    на @color/expense_divider — цвет определён в values/colors.xml (светлая)
+    и values-night/colors.xml (тёмная тема).
+
+    Также добавлен android:textColor="?attr/colorOnSurface" для всех TextView,
+    где он не был задан явно через атрибут темы.
+-->
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/card_expense"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="4dp"
-    android:layout_marginHorizontal="8dp"
+    app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
-    app:cardCornerRadius="12dp">
+    app:strokeColor="@color/card_stroke"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:padding="12dp">
 
+        <!-- Цветной индикатор слева: ИСПРАВЛЕНО с #ffff6b6b на expense_divider -->
         <View
-            android:id="@+id/color_indicator"
-            android:layout_width="6dp"
-            android:layout_height="48dp"
-            android:background="#FF6B6B" />
+            android:id="@+id/view_category_indicator"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="12dp"
+            android:background="@color/expense_divider"
+            android:minHeight="40dp" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp">
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tv_description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Описание"
-                android:textAppearance="?attr/textAppearanceBodyLarge"
-                android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-            <TextView
-                android:id="@+id/tv_category"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Категория"
-                android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textColor="?android:attr/textColorSecondary"
-                android:layout_marginTop="2dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="end">
-
+            <!-- Сумма -->
             <TextView
                 android:id="@+id/tv_amount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="1 000,00 ₽"
-                android:textAppearance="?attr/textAppearanceBodyLarge"
-                android:textStyle="bold"
-                android:textColor="?attr/colorError" />
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold" />
 
+            <!-- Категория -->
             <TextView
-                android:id="@+id/tv_date"
+                android:id="@+id/tv_category"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="15.01.2024"
+                android:layout_marginTop="2dp"
+                android:text="Категория"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <!-- Описание -->
+            <TextView
+                android:id="@+id/tv_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Описание"
                 android:textAppearance="?attr/textAppearanceBodySmall"
-                android:textColor="?android:attr/textColorSecondary"
-                android:layout_marginTop="2dp" />
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
         </LinearLayout>
+
+        <!-- Дата -->
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:text="15.01.2024"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
     </LinearLayout>
+
 </com.google.android.material.card.MaterialCardView>
