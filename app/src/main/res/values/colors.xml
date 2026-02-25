@@ -1,21 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    
-    <color name="background_light">#FFF8F9FA</color>
-    <color name="background_dark">#FF121212</color>
-    
-    <color name="category_food">#FF6B6B</color>
-    <color name="category_transport">#4ECDC4</color>
-    <color name="category_entertainment">#45B7D1</color>
-    <color name="category_shopping">#96CEB4</color>
-    <color name="category_health">#FFEAA7</color>
-    <color name="category_utilities">#DDA0DD</color>
-    <color name="category_other">#98D8C8</color>
+    <!-- Primary palette -->
+    <color name="primary">#6750A4</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="primary_container">#EADDFF</color>
+    <color name="on_primary_container">#21005D</color>
+
+    <!-- Surface / Background -->
+    <color name="background">#FFFBFE</color>
+    <color name="on_background">#1C1B1F</color>
+    <color name="surface">#FFFBFE</color>
+    <color name="on_surface">#1C1B1F</color>
+    <color name="surface_variant">#E7E0EC</color>
+    <color name="on_surface_variant">#49454F</color>
+
+    <!-- Expense accent colors — used via attr, not hardcoded -->
+    <color name="expense_negative">#B3261E</color>
+    <color name="expense_positive">#386A20</color>
+    <color name="expense_divider">#CAC4D0</color>
+
+    <!-- Card -->
+    <color name="card_background">#FFFBFE</color>
+    <color name="card_stroke">#CAC4D0</color>
+
+    <!-- Outline -->
+    <color name="outline">#79747E</color>
+    <color name="outline_variant">#CAC4D0</color>
+
+    <!-- Total amount text -->
+    <color name="total_amount_color">#6750A4</color>
+
+    <!-- Empty state -->
+    <color name="empty_state_text">#49454F</color>
+
+    <!-- Navigation buttons background -->
+    <color name="nav_button_background">@android:color/transparent</color>
 </resources>
